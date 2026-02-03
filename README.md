@@ -17,6 +17,55 @@ Demonstrar, de forma prática, conceitos fundamentais de Segurança da Informaç
 
 ---
 
+## Como executar
+
+### Scanner de portas
+```bash 
+# Scan utilizando portas comuns
+python scripts/port_scanner.py 127.0.0.1 --common
+
+# Scan com portas específicas
+python scripts/port_scanner.py 127.0.0.1 --ports 22,80,443
+
+# Scan com range de portas e timeout ajustado
+python scripts/port_scanner.py 127.0.0.1 --ports 1-200 --timeout 0.1
+```
+A execução do scanner gera um relatório em formato JSON contendo:
+- host analisado
+- portas escaneadas
+- portas abertas
+- timestamps da execução
+
+Arquivo gerado:
+
+outputs/port_scan.json
+
+### Analisador de logs
+```bash
+python scripts/log_analyzer.py
+python scripts/log_analyzer.py --file scripts/auth.log --keyword failed
+```
+Arquivo gerado:
+
+outputs/log_report.json
+
+### Verificador de senhas
+```bash
+python scripts/password_checker.py
+```
+Arquivo gerado:
+
+outputs/password_report.json
+
+### Relatório final
+```bash
+python scripts/report_builder.py
+```
+Arquivo gerado:
+
+outputs/final_report.json
+
+
 ## Tecnologias Utilizadas
 - Python 3
 - Redes TCP/IP
@@ -29,14 +78,20 @@ Demonstrar, de forma prática, conceitos fundamentais de Segurança da Informaç
 ## Estrutura do Projeto
 security-automation-toolkit/
 ├── scripts/
-│ ├── port_scanner.py
-│ ├── password_checker.py
-│ ├── log_analyzer.py
-│ └── auth.log
+│   ├── port_scanner.py
+│   ├── log_analyzer.py
+│   ├── password_checker.py
+│   ├── report_builder.py
+│   └── auth.log
 ├── docs/
-│ ├── scanner_explicacao.md
-│ ├── password_checker_explicacao.md
-│ └── log_analyzer_explicacao.md
+│   ├── scanner_explicacao.md
+│   ├── password_checker_explicacao.md
+│   └── log_analyzer_explicacao.md
+├── outputs/
+│   ├── port_scan.json
+│   ├── log_report.json
+│   ├── password_report.json
+│   └── final_report.json
 └── README.md
 
 
