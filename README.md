@@ -1,6 +1,6 @@
 # Security Automation Toolkit
 
-Projeto prático em Cibersegurança com foco em automação de tarefas básicas de segurança da informação utilizando Python. O projeto simula controles de segurança comuns em ambientes corporativos, com ênfase em aprendizado prático, análise de risco e documentação técnica.
+Projeto prático em Cibersegurança com foco em automação de tarefas básicas de Segurança da Informação, análise inicial de risco e geração de relatórios técnicos em HTML utilizando Python.
 
 ---
 
@@ -10,10 +10,18 @@ Demonstrar, de forma prática, conceitos fundamentais de Segurança da Informaç
 ---
 
 ## Funcionalidades
+
+### v1.1 (atual)
 - Scanner de portas para identificação de serviços de rede expostos
+- Consolidação de resultados de varredura
+- Classificação de risco (low / medium / high)
+- Geração de relatório técnico em HTML com resumo executivo
+
+### Funcionalidades em evolução (v2)
 - Verificação de senhas fracas com base em listas comuns
 - Análise simples de logs de autenticação
-- Scripts desenvolvidos para fins educacionais e testes controlados
+- Expansão de módulos educacionais ofensivos e defensivos
+
 
 ---
 
@@ -57,13 +65,13 @@ Arquivo gerado:
 
 outputs/password_report.json
 
-### Relatório final
+### Relatório HTML (v1.1)
 ```bash
-python scripts/report_builder.py
+python src/report_generator.py
 ```
 Arquivo gerado:
 
-outputs/final_report.json
+reports/out/report.html
 
 
 ## Tecnologias Utilizadas
@@ -92,21 +100,18 @@ security-automation-toolkit/
 │   ├── log_report.json
 │   ├── password_report.json
 │   └── final_report.json
+├── reports/
+│   ├── report_template.html
+│   └── out/
+│       └── report.html
+├── src/
+│   └── report_generator.py
 └── README.md
-
 
 ---
 
 ## Aviso Importante
 Este projeto foi desenvolvido exclusivamente para fins educacionais e demonstração de conceitos. Não deve ser utilizado em ambientes de produção nem em sistemas sem autorização prévia.
-
----
-
-## Próximos Passos
-- Evoluir os scripts com novas verificações de segurança
-- Implementar geração de relatórios automatizados
-- Criar visualizações simples dos resultados
-- Expandir o projeto para ambientes simulados mais complexos
 
 ---
 
