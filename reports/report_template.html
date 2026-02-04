@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Security Automation Toolkit — Report</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 24px;
+      line-height: 1.5;
+      background: #ffffff;
+      color: #111;
+    }
+
+    h1 {
+      margin-bottom: 5px;
+    }
+
+    h2 {
+      margin-top: 30px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 5px;
+    }
+
+    .meta {
+      color: #444;
+      margin-bottom: 20px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: bold;
+    }
+
+    .low {
+      background-color: #e6f7ee;
+      color: #0b6b3a;
+    }
+
+    .medium {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+
+    .high {
+      background-color: #fdecea;
+      color: #842029;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f4f4f4;
+    }
+
+    .small {
+      font-size: 12px;
+      color: #555;
+    }
+
+    code {
+      background: #f6f6f6;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Security Automation Toolkit</h1>
+
+  <div class="meta">
+    <div><strong>Data/Hora:</strong> {{scan_datetime}}</div>
+    <div><strong>Alvo:</strong> {{target}}</div>
+  </div>
+
+  <h2>Resumo Executivo</h2>
+  <p>{{executive_summary}}</p>
+
+  <h2>Classificação de Risco</h2>
+  <p>
+    <span class="badge {{risk_level_class}}">{{risk_level}}</span>
+    <span class="small">Score: {{risk_score}} / 100</span>
+  </p>
+
+  <p><strong>Recomendação:</strong> {{recommendation}}</p>
+
+  <h2>Achados</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Host</th>
+        <th>Porta</th>
+        <th>Serviço</th>
+        <th>Observação</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{findings_rows}}
+    </tbody>
+  </table>
+
+  <h2>Notas Técnicas</h2>
+  <p class="small">
+    Este relatório é educacional e deve ser utilizado apenas em ambientes autorizados.
+  </p>
+
+</body>
+</html>
