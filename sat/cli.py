@@ -1,44 +1,53 @@
 import argparse
+import os
 import subprocess
 import sys
 from pathlib import Path
 
+from sat.utils.config_loader import load_config
+from sat.utils.logger import setup_logger, get_logger
 
-def run_script(script_name: str, extra_args: list[str]):
-    scripts_dir = Path("scripts")
-    script_path = scripts_dir / script_name
 
+def run_script(script_path: Path, extra_args: list[str], log):
     if not script_path.exists():
-        print(f"Script não encontrado: {script_path}")
+        log.error(f"Script não encontrado: {script_path}")
         sys.exit(1)
 
-    # Usa o mesmo interpretador Python do CLI
     cmd = [sys.executable, str(script_path)] + extra_args
-    print(f"Executando: {' '.join(cmd)}")
+    log.info(f"Executando: {' '.join(cmd)}")
 
-    result = subprocess.run(cmd)
+    # garante que o subprocess enxergue o pacote "sat"
+    project_root = Path(__file__).resolve().parents[1]
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(project_root) + os.pathsep + env.get("PYTHONPATH", "")
+
+    result = subprocess.run(cmd, env=env)
 
     if result.returncode != 0:
-        print(f"Erro ao executar {script_name} (code {result.returncode})")
+        log.error(f"Erro ao executar {script_path.name} (code {result.returncode})")
         sys.exit(result.returncode)
+
+    log.info(f"Execução finalizada com sucesso: {script_path.name}")
 
 
 def main():
+    cfg = load_config()
+    setup_logger(cfg)
+    log = get_logger("cli")
+
     parser = argparse.ArgumentParser(
         prog="sat",
         description="Security Automation Toolkit CLI"
     )
     sub = parser.add_subparsers(dest="cmd", required=True)
 
-    # Comandos básicos
     sub.add_parser("ping", help="Teste rápido do CLI")
     sub.add_parser("list-outputs", help="Lista arquivos gerados em outputs/")
 
-    # Comando run
     run = sub.add_parser("run", help="Executa um módulo do toolkit via scripts/")
     run.add_argument(
         "module",
-        choices=["password", "portscan", "report"],
+        choices=["password", "portscan", "report", "loganalyzer"],
         help="Módulo para executar"
     )
     run.add_argument(
@@ -48,32 +57,42 @@ def main():
     )
 
     args = parser.parse_args()
+    log.info(f"Args received: {args}")
+
+    scripts_dir = Path(cfg.get("paths", {}).get("scripts", "scripts"))
+    outputs_dir = Path(cfg.get("paths", {}).get("outputs", "outputs"))
 
     if args.cmd == "ping":
+        log.info("SAT CLI OK")
         print("SAT CLI OK")
 
     elif args.cmd == "list-outputs":
-        out = Path("outputs")
-        if not out.exists():
+        if not outputs_dir.exists():
+            log.warning(f"Pasta outputs não encontrada: {outputs_dir}")
             print("Pasta outputs não encontrada")
             return
 
-        files = list(out.glob("*"))
+        files = [p for p in outputs_dir.rglob("*") if p.is_file()]
         if not files:
+            log.info("Nenhum output encontrado")
             print("Nenhum output encontrado")
             return
 
+        log.info(f"Listando outputs ({len(files)} arquivo(s))")
         print("Arquivos de saída:")
         for f in files:
-            print("-", f.name)
+            print("-", f.relative_to(outputs_dir))
 
     elif args.cmd == "run":
         mapping = {
             "password": "password_checker.py",
             "portscan": "port_scanner.py",
             "report": "report_builder.py",
+            "loganalyzer": "log_analyzer.py",
         }
-        run_script(mapping[args.module], args.args)
+        script_name = mapping[args.module]
+        script_path = scripts_dir / script_name
+        run_script(script_path, args.args, log)
 
 
 if __name__ == "__main__":

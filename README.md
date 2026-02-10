@@ -4,6 +4,16 @@ Projeto prático em **Cibersegurança** com foco em **automação de tarefas bá
 
 O projeto evolui de scripts independentes para uma **ferramenta orquestrada via CLI**, seguindo padrões comuns utilizados em ambientes corporativos de segurança.
 
+## Arquitetura do Projeto
+
+O Security Automation Toolkit (S.A.T.) segue um padrão próximo ao utilizado em ambientes corporativos de segurança:
+
+- **Configuração centralizada** via `config.yaml`
+- **CLI (`sat`) como ponto único de execução**
+- **Módulos desacoplados** executados via orquestração
+- **Logging estruturado** para auditoria e troubleshooting
+- **Separação clara** entre código, configuração, logs e outputs
+
 ---
 
 ## Objetivo do Projeto
@@ -33,11 +43,12 @@ Este projeto foi pensado como **portfólio técnico**, com foco em **estágio/j�
 
 ### Funcionalidades em Evolução — v2 (planejado)
 
-- Verificação de senhas fracas com base em listas comuns
-- Análise simples de logs de autenticação
-- Logging estruturado
-- Configuração centralizada via arquivo YAML
-- Expansão de módulos educacionais ofensivos e defensivos
+- Logs em formato JSON (preparação para SIEM)
+- Configuração por ambiente (dev / prod)
+- Códigos de saída padronizados
+- Testes automatizados básicos
+- Exportação de relatórios em múltiplos formatos
+
 
 ---
 
@@ -69,21 +80,21 @@ python --version
 
 ### Teste rápido da CLI
 ```bash
-python -m sat.cli ping
+python -m sat ping
 ```
 
 ### Listar arquivos gerados
 ```bash
-python -m sat.cli list-outputs
+python -m sat list-outputs
 ```
 
 ### Execução dos Módulos
 
 ### Scanner de Portas
 ```bash
-python -m sat.cli run portscan 127.0.0.1 --common
-python -m sat.cli run portscan 127.0.0.1 --ports 22,80,443
-python -m sat.cli run portscan 127.0.0.1 --ports 1-200 --timeout 0.1
+python -m sat run portscan -- 127.0.0.1 --common
+python -m sat run portscan -- 127.0.0.1 --ports 22,80,443
+python -m sat run portscan -- 127.0.0.1 --ports 1-200 --timeout 0.1
 ```
 
 #### Arquivo gerado:
@@ -93,8 +104,7 @@ outputs/port_scan.json
 
 ### Analisador de Logs
 ```bash
-python scripts/log_analyzer.py
-python scripts/log_analyzer.py --file scripts/auth.log --keyword failed
+python -m sat run loganalyzer -- --file scripts/auth.log --keyword failed --out outputs/log_report.json
 ```
 
 #### Arquivo gerado:
@@ -104,7 +114,7 @@ outputs/log_report.json
 
 ### Verificador de Senhas
 ```bash
-python -m sat.cli run password
+python -m sat run password
 ```
 
 #### Arquivo gerado:
@@ -112,15 +122,14 @@ python -m sat.cli run password
 outputs/password_report.json
 ```
 
-### Relatório HTML
+### Relatório Consolidado
 ```bash
-python -m sat.cli run report
+python -m sat run report
 ```
 
 #### Arquivo gerado:
 ```text
 outputs/final_report.json
-reports/out/report.html
 ```
 
 ---
@@ -129,29 +138,39 @@ reports/out/report.html
 security-automation-toolkit/
 ├── sat/
 │   ├── __init__.py
-│   └── cli.py
-├── config/
-│   └── config.yaml
-├── scripts/
+│   ├── __main__.py          # Entry point do pacote (python -m sat)
+│   ├── cli.py               # CLI principal (orquestração)
+│   ├── config/
+│   │   └── config.yaml      # Configuração centralizada
+│   └── utils/
+│       ├── config_loader.py # Loader e validação de config
+│       └── logger.py        # Logging estruturado
+│
+├── scripts/                 # Módulos executados via CLI
 │   ├── port_scanner.py
 │   ├── log_analyzer.py
 │   ├── password_checker.py
 │   ├── report_builder.py
 │   └── auth.log
-├── docs/
+│
+├── docs/                    # Documentação técnica dos módulos
 │   ├── scanner_explicacao.md
 │   ├── password_checker_explicacao.md
 │   └── log_analyzer_explicacao.md
-├── outputs/
+│
+├── outputs/                 # Evidências e resultados intermediários
 │   ├── port_scan.json
 │   ├── log_report.json
-│   ├── password_report.json
+│   └── password_report.json
+│
+├── reports/                 # Relatórios consolidados
 │   └── final_report.json
-├── reports/
-│   ├── report_template.html
-│   └── out/
-│       └── report.html
+│
+├── logs/                    # Logs estruturados da aplicação
+│   └── sat.log
+│
 └── README.md
+
 
 ---
 

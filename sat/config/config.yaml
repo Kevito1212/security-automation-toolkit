@@ -1,0 +1,20 @@
+paths:
+  scripts: "scripts"
+  outputs: "outputs"
+  reports: "reports"
+  logs: "logs" 
+  
+app:
+  name: "Security Automation Toolkit"
+  environment: "dev"
+
+logging:
+  level: "INFO"
+  file: "logs/sat.log"
+
+scanner:
+  timeout: 3
+  default_ports: "1-1024"
+
+reports:
+  output_dir: "outputs/reports"

@@ -4,6 +4,11 @@ import socket
 from datetime import datetime, timezone
 from pathlib import Path
 
+from sat.utils.logger import get_logger
+
+log = get_logger("port_scanner")
+
+
 DEFAULT_PORTS = [21, 22, 23, 80, 443, 3306]
 
 SERVICE_HINTS = {
@@ -59,10 +64,13 @@ def scan_ports(host: str, ports: list[int], timeout: float) -> dict:
 
             if is_open:
                 open_ports.append(port)
+                log.debug(f"Porta aberta detectada: {host}:{port}")
 
         except socket.gaierror:
+            log.error("Host inválido ou não resolvido (DNS).")
             raise ValueError("Host inválido ou não resolvido (DNS).")
         except Exception as e:
+            log.warning(f"Erro ao testar porta {port}: {e}")
             results.append({"port": port, "open": False, "error": str(e)})
         finally:
             sock.close()
@@ -82,6 +90,9 @@ def main():
     ports = parse_ports(args.ports, args.common or (args.ports is None))
     started_at = datetime.now(timezone.utc).isoformat()
 
+    log.info("Iniciando port_scanner")
+    log.info(f"Host={args.host} | portas={len(ports)} | timeout={args.timeout} | out={args.out}")
+
     data = scan_ports(args.host, ports, args.timeout)
 
     finished_at = datetime.now(timezone.utc).isoformat()
@@ -98,6 +109,14 @@ def main():
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+
+    if report["open_ports"]:
+        log.warning(f"Portas abertas: {report['open_ports']}")
+    else:
+        log.info("Portas abertas: nenhuma")
+
+    log.info(f"Relatório salvo em: {out_path}")
+    log.info("Finalizado com sucesso")
 
     print(f"Host analisado: {args.host}")
     print(f"Portas escaneadas: {len(ports)}")

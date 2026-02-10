@@ -5,6 +5,11 @@ from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
+from sat.utils.logger import get_logger
+
+log = get_logger("log_analyzer")
+
+
 IP_RE = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
 
 
@@ -29,21 +34,28 @@ def main():
     )
     args = parser.parse_args()
 
+    log.info("Iniciando análise de log")
+    log.info(f"Arquivo: {args.file} | keyword: {args.keyword} | saída: {args.out}")
+
     log_path = Path(args.file)
     if not log_path.exists():
-        print(f"[ERRO] Arquivo não encontrado: {log_path}")
+        log.error(f"Arquivo não encontrado: {log_path}")
         return
 
     failed_attempts = 0
     ip_counts = Counter()
 
-    with log_path.open("r", encoding="utf-8", errors="ignore") as f:
-        for line in f:
-            if args.keyword.lower() in line.lower():
-                failed_attempts += 1
-                m = IP_RE.search(line)
-                if m:
-                    ip_counts[m.group(0)] += 1
+    try:
+        with log_path.open("r", encoding="utf-8", errors="ignore") as f:
+            for line in f:
+                if args.keyword.lower() in line.lower():
+                    failed_attempts += 1
+                    m = IP_RE.search(line)
+                    if m:
+                        ip_counts[m.group(0)] += 1
+    except Exception:
+        log.exception("Falha ao ler/processar o arquivo de log")
+        raise
 
     top_ip, top_count = (None, 0)
     if ip_counts:
@@ -64,11 +76,11 @@ def main():
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
 
-    print(f"Arquivo analisado: {log_path}")
-    print(f"Falhas detectadas: {failed_attempts}")
+    log.info(f"Arquivo analisado: {log_path}")
+    log.info(f"Falhas detectadas: {failed_attempts}")
     if top_ip:
-        print(f"IP com mais falhas: {top_ip} ({top_count})")
-    print(f"Relatório salvo em: {out_path}")
+        log.warning(f"IP com mais falhas: {top_ip} ({top_count})")
+    log.info(f"Relatório salvo em: {out_path}")
 
 
 if __name__ == "__main__":

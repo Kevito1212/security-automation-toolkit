@@ -1,0 +1,72 @@
+{
+  "tool": "security_automation_toolkit",
+  "generated_at": "2026-02-10T00:23:54.104229+00:00",
+  "summary": {
+    "open_ports": [],
+    "failed_logins": 3,
+    "password_strength": "forte"
+  },
+  "details": {
+    "port_scan": {
+      "tool": "port_scanner",
+      "host": "127.0.0.1",
+      "started_at": "2026-02-10T00:21:39.550973+00:00",
+      "finished_at": "2026-02-10T00:21:45.582307+00:00",
+      "ports_scanned": 6,
+      "open_ports": [],
+      "results": [
+        {
+          "port": 21,
+          "open": false,
+          "service_hint": "ftp"
+        },
+        {
+          "port": 22,
+          "open": false,
+          "service_hint": "ssh"
+        },
+        {
+          "port": 23,
+          "open": false,
+          "service_hint": "telnet"
+        },
+        {
+          "port": 80,
+          "open": false,
+          "service_hint": "http"
+        },
+        {
+          "port": 443,
+          "open": false,
+          "service_hint": "https"
+        },
+        {
+          "port": 3306,
+          "open": false,
+          "service_hint": "mysql"
+        }
+      ]
+    },
+    "log_analysis": {
+      "tool": "log_analyzer",
+      "analyzed_at": "2026-02-10T00:23:01.666704+00:00",
+      "file": "scripts\\auth.log",
+      "keyword": "failed",
+      "failed_attempts": 3,
+      "top_suspicious_ip": "192.168.1.10",
+      "top_suspicious_ip_count": 3,
+      "ip_counts": {
+        "192.168.1.10": 3
+      }
+    },
+    "password_check": {
+      "tool": "password_checker",
+      "checked_at": "2026-02-10T00:23:33.384341+00:00",
+      "result": {
+        "verdict": "forte",
+        "score": 6,
+        "reasons": []
+      }
+    }
+  }
+}

@@ -4,6 +4,10 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
+from sat.utils.logger import get_logger
+
+log = get_logger("password_checker")
+
 COMMON_PASSWORDS = {
     "123456", "12345678", "password", "admin", "qwerty", "senha123"
 }
@@ -69,6 +73,9 @@ def main():
     )
     args = parser.parse_args()
 
+    log.info("Iniciando password_checker")
+    log.info(f"Arquivo de saída: {args.out}")
+
     password = input("Digite a senha para análise: ")
     result = check_password(password)
 
@@ -81,6 +88,13 @@ def main():
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+
+    log.info(f"Resultado: {result['verdict']} (score: {result['score']})")
+    if result["reasons"]:
+        log.warning(f"Observações ({len(result['reasons'])}):")
+        for r in result["reasons"]:
+            log.warning(f"- {r}")
+    log.info(f"Relatório salvo em: {out_path}")
 
     print(f"Resultado: {result['verdict']} (score: {result['score']})")
     if result["reasons"]:
