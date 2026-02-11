@@ -85,20 +85,22 @@
   <h1>Security Automation Toolkit</h1>
 
   <div class="meta">
-    <div><strong>Data/Hora:</strong> {{scan_datetime}}</div>
-    <div><strong>Alvo:</strong> {{target}}</div>
-  </div>
+  <div><strong>Dados gerados em:</strong> {{ data_generated_at }}</div>
+  <div><strong>Relatório renderizado em:</strong> {{ report_rendered_at }}</div>
+  <div><strong>Alvo:</strong> {{ target }}</div>
+</div>
+
 
   <h2>Resumo Executivo</h2>
-  <p>{{executive_summary}}</p>
+  <p>{{ executive_summary }}</p>
 
   <h2>Classificação de Risco</h2>
   <p>
-    <span class="badge {{risk_level_class}}">{{risk_level}}</span>
-    <span class="small">Score: {{risk_score}} / 100</span>
+    <span class="badge {{ risk_level_class }}">{{ risk_level }}</span>
+    <span class="small">Score: {{ risk_score }} / 100</span>
   </p>
 
-  <p><strong>Recomendação:</strong> {{recommendation}}</p>
+  <p><strong>Recomendação:</strong> {{ recommendation }}</p>
 
   <h2>Achados</h2>
 
@@ -111,8 +113,22 @@
         <th>Observação</th>
       </tr>
     </thead>
+
     <tbody>
-      {{findings_rows}}
+      {% if findings and findings|length > 0 %}
+        {% for f in findings %}
+          <tr>
+            <td>{{ f.host }}</td>
+            <td>{{ f.port }}</td>
+            <td>{{ f.service }}</td>
+            <td>{{ f.note }}</td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="4">Nenhum achado registrado.</td>
+        </tr>
+      {% endif %}
     </tbody>
   </table>
 

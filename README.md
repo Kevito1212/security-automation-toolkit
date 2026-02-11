@@ -9,10 +9,11 @@ O projeto evolui de scripts independentes para uma **ferramenta orquestrada via 
 O Security Automation Toolkit (S.A.T.) segue um padrão próximo ao utilizado em ambientes corporativos de segurança:
 
 - **Configuração centralizada** via `config.yaml`
-- **CLI (`sat`) como ponto único de execução**
+- **CLI (`python -m sat`) como ponto único de execução**
 - **Módulos desacoplados** executados via orquestração
 - **Logging estruturado** para auditoria e troubleshooting
-- **Separação clara** entre código, configuração, logs e outputs
+- **Consolidação de resultados em JSON**
+-  **Renderização de relatório executivo via Jinja2**
 
 ---
 
@@ -20,61 +21,67 @@ O Security Automation Toolkit (S.A.T.) segue um padrão próximo ao utilizado em
 
 Demonstrar, de forma prática e aplicada, conceitos fundamentais de:
 
-- Segurança da Informação
-- Automação de tarefas de segurança
-- Análise e organização de evidências
-- Classificação inicial de riscos
-- Geração de relatórios técnicos
-- Uso de CLI como camada de orquestração
+- Automação em Segurança da Informação  
+- Organização e consolidação de evidências técnicas  
+- Classificação inicial de risco baseada em achados  
+- Geração de relatórios executivos estruturados  
+- Arquitetura modular orientada a CLI  
+- Separação entre coleta, processamento e apresentação 
 
 Este projeto foi pensado como **portfólio técnico**, com foco em **estágio/júnior em Segurança da Informação**.
 
 ---
 
-## Funcionalidades
+## Funcionalidades — v1.1
 
-### Versão Atual — v1.1
+- Scanner de portas TCP
+- Análise básica de logs (tentativas de login)
+- Verificação de força de senha
+- Consolidação de resultados em `final_report.json`
+- Classificação automática de risco (low / medium / high)
+- Geração de relatório executivo em HTML
+- Registro de:
+  - Data de geração dos dados
+  - Data de renderização do relatório
+- Execução unificada via CLI
 
-- Scanner de portas TCP para identificação de serviços expostos
-- Consolidação de resultados de varredura
-- Classificação básica de risco (low / medium / high)
-- Geração de relatório técnico em HTML com resumo executivo
-- Execução unificada por meio de CLI
+---
 
-### Funcionalidades em Evolução — v2 (planejado)
+## Evolução Planejada — v2
 
-- Logs em formato JSON (preparação para SIEM)
+- Logs em formato JSON (preparação para integração com SIEM)
 - Configuração por ambiente (dev / prod)
-- Códigos de saída padronizados
+- Exportação de relatório em PDF
 - Testes automatizados básicos
-- Exportação de relatórios em múltiplos formatos
-
+- Padronização de códigos de saída
+- Refinamento da métrica de risco
 
 ---
 
 ## Tecnologias Utilizadas
 
 - Python 3.10+
+- Jinja2 (renderização HTML)
 - Redes TCP/IP
-- Segurança da Informação
+- Estruturação de CLI
 - Automação de tarefas
-- Análise de logs
-- CLI (Command Line Interface)
+- Análise básica de logs
+- Organização de evidências técnicas
 
 ---
 
-## Como Executar
+## ▶ Como Executar
 
 ### Pré-requisitos
 
 - Python 3.10 ou superior
 - Ambiente local (Windows ou Linux)
 
-Verificar versão do Python:
+Verificar versão:
 
 ```bash
 python --version
-```
+´´´
 
 ## Execução via CLI (recomendado)
 
@@ -104,7 +111,7 @@ outputs/port_scan.json
 
 ### Analisador de Logs
 ```bash
-python -m sat run loganalyzer -- --file scripts/auth.log --keyword failed --out outputs/log_report.json
+python -m sat run loganalyzer -- --file scripts/auth.log --keyword failed
 ```
 
 #### Arquivo gerado:
@@ -128,8 +135,18 @@ python -m sat run report
 ```
 
 #### Arquivo gerado:
-```text
-outputs/final_report.json
+```bash
+reports/final_report.json
+```
+
+### Gerar Relatório Executivo em HTML
+```bash
+python -m scripts.render_html_test
+```
+
+#### Arquivo gerado:
+```bash
+reports/report.html
 ```
 
 ---
@@ -144,8 +161,8 @@ security-automation-toolkit/
 │   │   └── config.yaml      # Configuração centralizada
 │   └── utils/
 │       ├── config_loader.py # Loader e validação de config
-│       └── logger.py        # Logging estruturado
-│
+│       ├── logger.py        # Logging estruturado
+│       └── html_renderer.py
 ├── scripts/                 # Módulos executados via CLI
 │   ├── port_scanner.py
 │   ├── log_analyzer.py
@@ -181,6 +198,6 @@ Não deve ser utilizado em ambientes de produção nem em sistemas sem autoriza�
 ---
 
 ## Autor
-Keven Silva  
 Estudante de Segurança da Informação
+Projeto voltado para portfólio técnico e desenvolvimento profissional na área de Cibersegurança
 
