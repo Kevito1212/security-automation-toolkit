@@ -188,6 +188,40 @@ security-automation-toolkit/
 │
 └── README.md
 
+---
+
+## Competências Demonstradas
+
+Este projeto demonstra, de forma prática, as seguintes competências técnicas relevantes para atuação em Segurança da Informação:
+
+### Segurança e Análise de Risco
+- Identificação de serviços expostos via varredura TCP
+- Consolidação de evidências técnicas em formato estruturado (JSON)
+- Classificação automatizada de risco (low / medium / high)
+- Organização de achados com foco em visão executiva
+
+### Arquitetura e Organização de Código
+- Estrutura modular desacoplada
+- Orquestração via CLI (`python -m sat`)
+- Separação clara entre:
+  - Coleta de dados
+  - Processamento
+  - Consolidação
+  - Apresentação (HTML)
+
+### Automação e Engenharia de Software
+- Uso de `subprocess` com controle de ambiente (PYTHONPATH)
+- Logging estruturado para auditoria
+- Uso de template engine (Jinja2) para geração dinâmica de relatórios
+- Versionamento adequado com `.gitignore` e controle de releases (v1.1)
+
+### Comunicação Técnica
+- Geração de relatório executivo em HTML
+- Separação entre data de geração dos dados e data de renderização
+- Apresentação clara de resumo, classificação de risco e recomendações
+
+---
+
 
 ---
 
