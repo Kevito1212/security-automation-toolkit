@@ -1,19 +1,10 @@
-outputs/*.json
-# Python
+# generated artifacts
+outputs/
+logs/
+reports/final_report.json
+reports/report.html
+
+# python
 __pycache__/
 *.pyc
-
-# Logs
-logs/
-*.log
-
-# Generated reports
-reports/*.html
-reports/final_report*.json
-
-# Outputs
-outputs/
-
-# OS
-.DS_Store
-Thumbs.db
+.venv/

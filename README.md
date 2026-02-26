@@ -1,237 +1,240 @@
 # Security Automation Toolkit (S.A.T.)
 
-Projeto prático em **Cibersegurança** com foco em **automação de tarefas básicas de Segurança da Informação**, **análise inicial de riscos** e **geração de relatórios técnicos em HTML**, desenvolvido em Python.
+S.A.T. é um projeto prático em Cibersegurança desenvolvido em Python com foco na simulação de fluxo de trabalho de um Security Operations Center (SOC).
 
-O projeto evolui de scripts independentes para uma **ferramenta orquestrada via CLI**, seguindo padrões comuns utilizados em ambientes corporativos de segurança.
-
-## Arquitetura do Projeto
-
-O Security Automation Toolkit (S.A.T.) segue um padrão próximo ao utilizado em ambientes corporativos de segurança:
-
-- **Configuração centralizada** via `config.yaml`
-- **CLI (`python -m sat`) como ponto único de execução**
-- **Módulos desacoplados** executados via orquestração
-- **Logging estruturado** para auditoria e troubleshooting
-- **Consolidação de resultados em JSON**
--  **Renderização de relatório executivo via Jinja2**
+A ferramenta evoluiu de scripts independentes para uma arquitetura modular orquestrada via CLI, incorporando ingestão de logs, normalização de eventos em formato JSONL, correlação temporal (sliding window) e geração de alertas estruturados com impacto direto no cálculo de risco.
 
 ---
 
 ## Objetivo do Projeto
 
-Demonstrar, de forma prática e aplicada, conceitos fundamentais de:
+Demonstrar, de forma prática e aplicada:
 
 - Automação em Segurança da Informação  
 - Organização e consolidação de evidências técnicas  
-- Classificação inicial de risco baseada em achados  
-- Geração de relatórios executivos estruturados  
-- Arquitetura modular orientada a CLI  
-- Separação entre coleta, processamento e apresentação 
+- Estruturação de eventos no modelo similar a SIEM  
+- Implementação de regras de detecção comportamental  
+- Correlação temporal de eventos (sliding window)  
+- Geração de alertas enriquecidos com contexto temporal  
+- Integração de pipeline SOC com relatório executivo  
+- Arquitetura modular orientada a CLI    
 
-Este projeto foi pensado como **portfólio técnico**, com foco em **estágio/júnior em Segurança da Informação**.
-
----
-
-## Funcionalidades — v1.1
-
-- Scanner de portas TCP
-- Análise básica de logs (tentativas de login)
-- Verificação de força de senha
-- Consolidação de resultados em `final_report.json`
-- Classificação automática de risco (low / medium / high)
-- Geração de relatório executivo em HTML
-- Registro de:
-  - Data de geração dos dados
-  - Data de renderização do relatório
-- Execução unificada via CLI
+O projeto foi desenvolvido como portfólio técnico com foco em estágio/júnior em Segurança da Informação, especialmente em SOC / Blue Team.
 
 ---
 
-## Evolução Planejada — v2
+## Arquitetura do Projeto
 
-- Logs em formato JSON (preparação para integração com SIEM)
-- Configuração por ambiente (dev / prod)
-- Exportação de relatório em PDF
-- Testes automatizados básicos
-- Padronização de códigos de saída
-- Refinamento da métrica de risco
 
+security-automation-toolkit/
+├── sat/
+│ ├── __main__.py
+│ ├── cli.py
+│ ├── soc/
+│ │ ├── ingest.py
+│ │ ├── detection.py
+│ │ ├── models.py
+│ ├── config/
+│ └── utils/
+├── scripts/
+│ ├── port_scanner.py
+│ ├── log_analyzer.py
+│ ├── password_checker.py
+│ ├── report_builder.py
+│ └── auth_sample.log
+├── outputs/
+│ ├── soc_events_auth.jsonl
+│ └── soc_alerts.jsonl
+├── reports/
+│ └── final_report.json
+├── logs/
+│ └── sat.log
+└── README.md
+  
 ---
 
-## Tecnologias Utilizadas
+## Funcionalidades — v1.2 (SOC Simulation Mode)
 
-- Python 3.10+
-- Jinja2 (renderização HTML)
-- Redes TCP/IP
-- Estruturação de CLI
-- Automação de tarefas
-- Análise básica de logs
-- Organização de evidências técnicas
+### 1. Ingestão e Normalização de Logs
 
----
-
-## ▶ Como Executar
-
-### Pré-requisitos
-
-- Python 3.10 ou superior
-- Ambiente local (Windows ou Linux)
-
-Verificar versão:
-
+#### Comando:
 ```bash
-python --version
-´´´
-
-## Execução via CLI (recomendado)
-
-### Teste rápido da CLI
-```bash
-python -m sat ping
+python -m sat ingest auth
 ```
+- Leitura de `scripts/auth_sample.log` (log de exemplo incluído no projeto)
+- Extração de timestamp real
+- Normalização de eventos em JSONL
+- Geração de `outputs/soc_events_auth.jsonl`
 
-### Listar arquivos gerados
+Cada evento normalizado contém:
+
+- timestamp
+- source
+- event_type
+- severity
+- user
+- src_ip
+- raw
+
+---
+
+### 2. Detecção de Brute Force SSH
+
+Regra baseada em correlação temporal:
+
+Se um endereço IP registrar múltiplas falhas de login SSH dentro de uma janela de tempo definida, é gerado um alerta de severidade alta.
+
+A detecção utiliza algoritmo de sliding window para correlação temporal.
+
+#### Comando:
 ```bash
-python -m sat list-outputs
+python -m sat detect bruteforce --threshold 5 --window 120
 ```
+## Parâmetros:
 
-### Execução dos Módulos
+- threshold: número mínimo de falhas
+- window: janela de tempo (segundos)
 
-### Scanner de Portas
+#### Saída:
+  outputs/soc_alerts.jsonl
+
+## Exemplo de alerta:
+{
+  "alert_type": "brute_force_detected",
+  "severity": "high",
+  "src_ip": "192.168.1.10",
+  "failed_attempts": 5,
+  "window_seconds": 120,
+  "first_seen": "2026-02-25T10:00:01",
+  "last_seen": "2026-02-25T10:01:40",
+  "status": "open"
+}
+
+Os alertas são automaticamente incorporados ao relatório HTML, influenciando o score de risco.
+
+---
+
+## Execução dos Módulos de Automação
+
+Além do modo SOC, o S.A.T. mantém módulos independentes de automação executados via CLI.
+
+Todos os módulos são orquestrados pelo comando:
+  python -m sat run <módulo>
+
+  
+---
+
+### Scanner de Portas TCP
+
+Executa varredura de portas TCP e gera evidência estruturada.
+
+#### Exemplos:
 ```bash
 python -m sat run portscan -- 127.0.0.1 --common
-python -m sat run portscan -- 127.0.0.1 --ports 22,80,443
-python -m sat run portscan -- 127.0.0.1 --ports 1-200 --timeout 0.1
 ```
 
-#### Arquivo gerado:
+#### Saída:
+  outputs/port_scan.json
+
+### Análise de Logs
+
+Analisa arquivos de log com base em palavra-chave.
+
+#### Exemplo:
 ```bash
-outputs/port_scan.json
+python -m sat run loganalyzer -- --file scripts/auth.log --keyword Failed
 ```
 
-### Analisador de Logs
-```bash
-python -m sat run loganalyzer -- --file scripts/auth.log --keyword failed
-```
-
-#### Arquivo gerado:
-```bash
-outputs/log_report.json
-```
+#### Saída:
+  outputs/log_report.json
 
 ### Verificador de Senhas
+
+Executa análise simples de força de senha.
+
+#### Exemplo:
 ```bash
 python -m sat run password
 ```
-
-#### Arquivo gerado:
-```bash
-outputs/password_report.json
-```
+#### Saída:
+  outputs/password_report.json
 
 ### Relatório Consolidado
+
+Consolida resultados dos módulos e classifica risco.
 ```bash
 python -m sat run report
 ```
-
-#### Arquivo gerado:
+### Geração opcional de HTML:
 ```bash
-reports/final_report.json
+python -m sat run report --html
 ```
+#### Saída:
+  reports/final_report.json
+  reports/report.html
 
-### Gerar Relatório Executivo em HTML
-```bash
-python -m scripts.render_html_test
-```
+### O relatório inclui:
 
-#### Arquivo gerado:
-```bash
-reports/report.html
-```
+- Dashboard visual
+- Score dinâmico de risco (0–100)
+- Classificação automática (baixo / médio / alto)
+- Alertas SOC destacados
+- Consolidação de evidências técnicas
+- Recomendações
+
+## Funcionalidades Originais (Automação e Relatórios)
+
+- Scanner de portas TCP
+- Análise básica de logs
+- Verificação de força de senha
+- Consolidação de resultados em JSON
+- Classificação automática de risco
+- Geração de relatório executivo em HTML via Jinja2
 
 ---
 
-## Estrutura do Projeto
-security-automation-toolkit/
-├── sat/
-│   ├── __init__.py
-│   ├── __main__.py          # Entry point do pacote (python -m sat)
-│   ├── cli.py               # CLI principal (orquestração)
-│   ├── config/
-│   │   └── config.yaml      # Configuração centralizada
-│   └── utils/
-│       ├── config_loader.py # Loader e validação de config
-│       ├── logger.py        # Logging estruturado
-│       └── html_renderer.py
-├── scripts/                 # Módulos executados via CLI
-│   ├── port_scanner.py
-│   ├── log_analyzer.py
-│   ├── password_checker.py
-│   ├── report_builder.py
-│   └── auth.log
-│
-├── docs/                    # Documentação técnica dos módulos
-│   ├── scanner_explicacao.md
-│   ├── password_checker_explicacao.md
-│   └── log_analyzer_explicacao.md
-│
-├── outputs/                 # Evidências e resultados intermediários
-│   ├── port_scan.json
-│   ├── log_report.json
-│   └── password_report.json
-│
-├── reports/                 # Relatórios consolidados
-│   └── final_report.json
-│
-├── logs/                    # Logs estruturados da aplicação
-│   └── sat.log
-│
-└── README.md
+### Competências Demonstradas
 
----
+### Monitoramento e Detecção
 
-## Competências Demonstradas
+- Normalização de logs em JSONL
+- Extração e manipulação de timestamp
+- Correlação temporal (sliding window)
+- Geração de alertas estruturados
+- Enriquecimento de contexto (first_seen / last_seen)
+- Integração de alertas ao cálculo dinâmico de risk scoring
 
-Este projeto demonstra, de forma prática, as seguintes competências técnicas relevantes para atuação em Segurança da Informação:
+### Arquitetura e Engenharia
 
-### Segurança e Análise de Risco
-- Identificação de serviços expostos via varredura TCP
-- Consolidação de evidências técnicas em formato estruturado (JSON)
-- Classificação automatizada de risco (low / medium / high)
-- Organização de achados com foco em visão executiva
-
-### Arquitetura e Organização de Código
-- Estrutura modular desacoplada
+- Arquitetura modular desacoplada
 - Orquestração via CLI (`python -m sat`)
-- Separação clara entre:
-  - Coleta de dados
-  - Processamento
-  - Consolidação
-  - Apresentação (HTML)
-
-### Automação e Engenharia de Software
-- Uso de `subprocess` com controle de ambiente (PYTHONPATH)
+- Separação entre ingestão, detecção e apresentação
 - Logging estruturado para auditoria
-- Uso de template engine (Jinja2) para geração dinâmica de relatórios
-- Versionamento adequado com `.gitignore` e controle de releases (v1.1)
-
-### Comunicação Técnica
-- Geração de relatório executivo em HTML
-- Separação entre data de geração dos dados e data de renderização
-- Apresentação clara de resumo, classificação de risco e recomendações
+- Controle de execução via subprocess com ambiente isolado
+- Geração dinâmica de relatórios via Jinja2
 
 ---
 
+## Evolução Planejada
+
+- Correlação entre múltiplos eventos
+- Classificação dinâmica de severidade (risk scoring)
+- Status de alerta (open, investigating, closed)
+- Simulação de incidente com linha do tempo
+- Integração futura com formato compatível com SIEM
 
 ---
 
-## Aviso Importante
-Este projeto foi desenvolvido exclusivamente para fins educacionais e demonstração de conceitos.
-Não deve ser utilizado em ambientes de produção nem em sistemas sem autorização prévia.
+## Aviso
+
+Este projeto foi desenvolvido exclusivamente para fins educacionais.
+Não deve ser utilizado em ambientes de produção ou sistemas sem autorização.
 
 ---
 
 ## Autor
-Estudante de Segurança da Informação
-Projeto voltado para portfólio técnico e desenvolvimento profissional na área de Cibersegurança
 
+Keven Silva  
+Estudante de Segurança da Informação 
+Projeto voltado para portfólio técnico e desenvolvimento profissional na área de Cibersegurança 
+Foco em SOC / Blue Team

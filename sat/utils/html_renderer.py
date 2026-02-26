@@ -123,6 +123,13 @@ def _build_findings(data: dict) -> list[dict]:
 
     return findings
 
+def _sev_class(sev: str | None) -> str:
+    sev = (sev or "").lower()
+    if sev in ("high", "critical"):
+        return "high"
+    if sev == "medium":
+        return "medium"
+    return "low"
 
 def render_html_report(
     final_report_json: str | Path,
@@ -153,17 +160,47 @@ def render_html_report(
     failed_logins = raw.get("summary", {}).get("failed_logins") or 0
     password_strength = (raw.get("summary", {}).get("password_strength") or "").lower()
 
+    soc_alerts = raw.get("details", {}).get("soc_alerts") or []
+    soc_alerts_count = len(soc_alerts) if isinstance(soc_alerts, list) else 0
+    soc_high_count = 0
+    if isinstance(soc_alerts, list):
+        soc_high_count = sum(1 for a in soc_alerts if str(a.get("severity", "")).lower() in ("high", "critical"))
+
+    soc_alerts_raw = raw.get("details", {}).get("soc_alerts") or []
+    soc_alerts: list[dict] = []
+
+    if isinstance(soc_alerts_raw, list):
+        for a in soc_alerts_raw:
+            soc_alerts.append({
+                "alert_type": a.get("alert_type", "soc_alert"),
+                "severity": a.get("severity", "unknown"),
+                "severity_class": _sev_class(a.get("severity")),
+                "src_ip": a.get("src_ip", "N/A"),
+                "failed_attempts": a.get("failed_attempts"),
+                "window_seconds": a.get("window_seconds"),
+                "first_seen": _parse_dt(a.get("first_seen")),
+                "last_seen": _parse_dt(a.get("last_seen")),
+                "status": a.get("status", "open"),
+            })
+
     risk_score = 0
     risk_score += min(open_ports_count * 20, 60)  # até 60
     risk_score += 10 if isinstance(failed_logins, int) and failed_logins >= 3 else 0
     risk_score += 15 if password_strength and password_strength != "forte" else 0
+
+    # SOC: alertas aumentam o score
+    risk_score += min(soc_alerts_count * 20, 40)     # até +40 por volume
+    risk_score += 20 if soc_high_count > 0 else 0    # +20 se tem high/critical
+
+    # clamp final (depois de somar tudo)
     risk_score = max(0, min(100, int(risk_score)))
 
     risk_level, risk_level_class = _risk_class(risk_score)
 
     executive_summary = (
         f"Foram identificados {open_ports_count} serviços expostos, "
-        f"{failed_logins} tentativas de login falhas e senha '{password_strength or 'N/A'}'."
+        f"{failed_logins} tentativas de login falhas, senha '{password_strength or 'N/A'}' "
+        f"e {soc_alerts_count} alerta(s) SOC (high/critical: {soc_high_count})."
     )
 
     recommendation = (
@@ -181,7 +218,15 @@ def render_html_report(
         "risk_score": risk_score,
         "recommendation": recommendation,
         "findings": findings,
-}
+        "soc_alerts": soc_alerts,
+
+        # dashboard metrics
+        "open_ports_count": open_ports_count,
+        "failed_logins": failed_logins,
+        "password_strength": (password_strength or "n/a"),
+        "soc_alerts_count": soc_alerts_count,
+        "soc_high_count": soc_high_count,
+    }
 
     
 

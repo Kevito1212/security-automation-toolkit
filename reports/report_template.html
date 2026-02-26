@@ -5,137 +5,302 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Security Automation Toolkit — Report</title>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 24px;
-      line-height: 1.5;
-      background: #ffffff;
-      color: #111;
-    }
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --text: #111111;
+    --muted: #444444;
+    --border: #dddddd;
+    --table-header: #f4f4f4;
 
-    h1 {
-      margin-bottom: 5px;
-    }
+    --low-bg: #e6f7ee;
+    --low-text: #0b6b3a;
 
-    h2 {
-      margin-top: 30px;
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 5px;
-    }
+    --med-bg: #fff3cd;
+    --med-text: #5c4300;
 
-    .meta {
-      color: #444;
-      margin-bottom: 20px;
-    }
+    --high-bg: #fdecea;
+    --high-text: #7a1f2a;
 
-    .badge {
-      display: inline-block;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-weight: bold;
-    }
+    --status-bg: #f0f0f0;
+    --status-text: #333333;
 
-    .low {
-      background-color: #e6f7ee;
-      color: #0b6b3a;
-    }
+    --risk-track: #ececec;
+    --risk-fill: #111111;
+  }
 
-    .medium {
-      background-color: #fff3cd;
-      color: #856404;
-    }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121212;
+      --surface: #161616;
+      --text: #eaeaea;
+      --muted: #b5b5b5;
+      --border: #2e2e2e;
+      --table-header: #1e1e1e;
 
-    .high {
-      background-color: #fdecea;
-      color: #842029;
-    }
+      --low-bg: rgba(46, 204, 113, 0.18);
+      --low-text: #7dffb2;
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 12px;
-    }
+      --med-bg: rgba(241, 196, 15, 0.18);
+      --med-text: #ffd76a;
 
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
-    }
+      --high-bg: rgba(231, 76, 60, 0.28);
+      --high-text: #ffb3ab;
 
-    th {
-      background-color: #f4f4f4;
-    }
+      --status-bg: #242424;
+      --status-text: #dddddd;
 
-    .small {
-      font-size: 12px;
-      color: #555;
+      --risk-track: #2a2a2a;
+      --risk-fill: #eaeaea;
     }
+  }
 
-    code {
-      background: #f6f6f6;
-      padding: 2px 6px;
-      border-radius: 6px;
+  body {
+    font-family: Arial, sans-serif;
+    margin: 24px;
+    line-height: 1.5;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  h1 { margin-bottom: 6px; }
+  h2 {
+    margin-top: 30px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+  }
+
+  .meta { color: var(--muted); margin-bottom: 18px; }
+
+  /* DASHBOARD */
+  .dashboard {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 12px;
+    margin-top: 14px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+  }
+
+  .span-4 { grid-column: span 4; }
+  .span-8 { grid-column: span 8; }
+
+  @media (max-width: 900px) {
+    .span-4, .span-8 { grid-column: span 12; }
+  }
+
+  .kpi-title {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .kpi-value {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .kpi-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  /* BADGES */
+  .badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 700;
+  }
+
+  .low    { background: var(--low-bg);  color: var(--low-text); }
+  .medium { background: var(--med-bg);  color: var(--med-text); }
+  .high   { background: var(--high-bg); color: var(--high-text); }
+
+  .status {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    background: var(--status-bg);
+    color: var(--status-text);
+  }
+
+  /* ALERTA DESTACADO */
+  .alert-high {
+    border-left: 4px solid #e74c3c;
+    background: rgba(231, 76, 60, 0.08);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .alert-high {
+      background: rgba(231, 76, 60, 0.12);
     }
-  </style>
+  }
+
+  /* RISK BAR */
+  .risk-wrap { margin-top: 10px; }
+  .risk-bar {
+    height: 12px;
+    border-radius: 999px;
+    background: var(--risk-track);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .risk-bar > div {
+    height: 100%;
+    width: 0%;
+  }
+
+  /* DONUT */
+  .donut {
+    width: 86px;
+    height: 86px;
+    border-radius: 50%;
+    background: conic-gradient(var(--risk-fill) 0deg, var(--risk-track) 0deg);
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--border);
+  }
+
+  .donut-inner {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background: var(--surface);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    border: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+  }
+
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px;
+    text-align: left;
+  }
+
+  th { background: var(--table-header); }
+
+  .small { font-size: 12px; color: var(--muted); }
+
+</style>
 </head>
 
 <body>
 
-  <h1>Security Automation Toolkit</h1>
+<h1>Security Automation Toolkit</h1>
 
-  <div class="meta">
+<div class="meta">
   <div><strong>Dados gerados em:</strong> {{ data_generated_at }}</div>
   <div><strong>Relatório renderizado em:</strong> {{ report_rendered_at }}</div>
   <div><strong>Alvo:</strong> {{ target }}</div>
 </div>
 
+<div class="dashboard">
 
-  <h2>Resumo Executivo</h2>
-  <p>{{ executive_summary }}</p>
-
-  <h2>Classificação de Risco</h2>
-  <p>
+  <div class="card span-8">
+    <div class="kpi-title">Risco</div>
     <span class="badge {{ risk_level_class }}">{{ risk_level }}</span>
     <span class="small">Score: {{ risk_score }} / 100</span>
-  </p>
 
-  <p><strong>Recomendação:</strong> {{ recommendation }}</p>
+    <div class="risk-wrap">
+      <div class="risk-bar">
+        <div id="riskFill"></div>
+      </div>
+    </div>
 
-  <h2>Achados</h2>
+    <div class="kpi-sub">
+      Portas: {{ open_ports_count }} |
+      Falhas login: {{ failed_logins }} |
+      Alertas SOC: {{ soc_alerts_count }} (high/critical: {{ soc_high_count }})
+    </div>
+  </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Host</th>
-        <th>Porta</th>
-        <th>Serviço</th>
-        <th>Observação</th>
-      </tr>
-    </thead>
+  <div class="card span-4">
+    <div class="donut" id="riskDonut">
+      <div class="donut-inner">{{ risk_score }}</div>
+    </div>
+  </div>
 
-    <tbody>
-      {% if findings and findings|length > 0 %}
-        {% for f in findings %}
-          <tr>
-            <td>{{ f.host }}</td>
-            <td>{{ f.port }}</td>
-            <td>{{ f.service }}</td>
-            <td>{{ f.note }}</td>
-          </tr>
-        {% endfor %}
-      {% else %}
-        <tr>
-          <td colspan="4">Nenhum achado registrado.</td>
-        </tr>
-      {% endif %}
-    </tbody>
-  </table>
+</div>
 
-  <h2>Notas Técnicas</h2>
-  <p class="small">
-    Este relatório é educacional e deve ser utilizado apenas em ambientes autorizados.
-  </p>
+<h2>Resumo Executivo</h2>
+<p>{{ executive_summary }}</p>
+
+<h2>Alertas SOC</h2>
+
+{% if soc_alerts and soc_alerts|length > 0 %}
+<table>
+  <thead>
+    <tr>
+      <th>Tipo</th>
+      <th>Severidade</th>
+      <th>IP</th>
+      <th>Falhas</th>
+      <th>Janela</th>
+      <th>First Seen</th>
+      <th>Last Seen</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for a in soc_alerts %}
+    <tr class="{% if a.severity in ['high', 'critical'] %}alert-high{% endif %}">
+      <td>{{ a.alert_type }}</td>
+      <td><span class="badge {{ a.severity_class }}">{{ a.severity }}</span></td>
+      <td>{{ a.src_ip }}</td>
+      <td>{{ a.failed_attempts }}</td>
+      <td>{{ a.window_seconds }}s</td>
+      <td>{{ a.first_seen }}</td>
+      <td>{{ a.last_seen }}</td>
+      <td><span class="status">{{ a.status }}</span></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="small">Nenhum alerta SOC gerado.</p>
+{% endif %}
+
+<script>
+(function () {
+  var score = Number("{{ risk_score }}") || 0;
+  if (score < 0) score = 0;
+  if (score > 100) score = 100;
+
+  var fill = document.getElementById("riskFill");
+  if (fill) {
+    fill.style.width = score + "%";
+    fill.style.background =
+      score >= 70 ? "#e74c3c" :
+      score >= 40 ? "#f1c40f" :
+      "#2ecc71";
+  }
+
+  var donut = document.getElementById("riskDonut");
+  if (donut) {
+    var deg = Math.round((score / 100) * 360);
+    donut.style.background =
+      "conic-gradient(var(--risk-fill) " + deg + "deg, var(--risk-track) 0deg)";
+  }
+})();
+</script>
 
 </body>
 </html>
