@@ -192,7 +192,6 @@
 
   .small { font-size: 12px; color: var(--muted); }
 
-  /* label discreto */
   .pill {
     display: inline-block;
     font-size: 11px;
@@ -265,29 +264,39 @@
       <th>Status</th>
     </tr>
   </thead>
+
   <tbody>
     {% for a in soc_alerts %}
-    <tr class="{% if a.severity in ['high', 'critical'] %}alert-high{% endif %}">
-      <td>{{ a.alert_type }}</td>
-      <td><span class="badge {{ a.severity_class }}">{{ a.severity }}</span></td>
-      <td>
-        {% if a.mitre %}
-          {% if a.mitre is string %}
-            {{ a.mitre }}
+      {# ---- Compat: schema novo (entities/timestamps/evidence) + schema antigo ---- #}
+      {% set _ip = (a.entities.src_ip if a.entities is defined and a.entities and a.entities.src_ip is defined else (a.src_ip if a.src_ip is defined else None)) %}
+      {% set _failed = (a.evidence.failed_attempts if a.evidence is defined and a.evidence and a.evidence.failed_attempts is defined else (a.failed_attempts if a.failed_attempts is defined else None)) %}
+      {% set _window = (a.evidence.window_seconds if a.evidence is defined and a.evidence and a.evidence.window_seconds is defined else (a.window_seconds if a.window_seconds is defined else None)) %}
+      {% set _first = (a.timestamps.first_seen if a.timestamps is defined and a.timestamps and a.timestamps.first_seen is defined else (a.first_seen if a.first_seen is defined else None)) %}
+      {% set _last = (a.timestamps.last_seen if a.timestamps is defined and a.timestamps and a.timestamps.last_seen is defined else (a.last_seen if a.last_seen is defined else None)) %}
+
+      <tr class="{% if a.severity in ['high', 'critical'] %}alert-high{% endif %}">
+        <td>{{ a.alert_type if a.alert_type is defined else (a.rule_id if a.rule_id is defined else "-") }}</td>
+        <td><span class="badge {{ a.severity_class }}">{{ a.severity }}</span></td>
+
+        <td>
+          {% if a.mitre %}
+            {% if a.mitre is string %}
+              {{ a.mitre }}
+            {% else %}
+              {{ a.mitre | join(", ") }}
+            {% endif %}
           {% else %}
-            {{ a.mitre | join(", ") }}
+            -
           {% endif %}
-        {% else %}
-          -
-        {% endif %}
-      </td>
-      <td>{{ a.src_ip }}</td>
-      <td>{{ a.failed_attempts if a.failed_attempts is not none else "-" }}</td>
-      <td>{{ a.window_seconds if a.window_seconds is not none else "-" }}{% if a.window_seconds is not none %}s{% endif %}</td>
-      <td>{{ a.first_seen or "-" }}</td>
-      <td>{{ a.last_seen or "-" }}</td>
-      <td><span class="status">{{ a.status }}</span></td>
-    </tr>
+        </td>
+
+        <td>{{ _ip or "-" }}</td>
+        <td>{{ _failed if _failed is not none else "-" }}</td>
+        <td>{{ _window if _window is not none else "-" }}{% if _window is not none %}s{% endif %}</td>
+        <td>{{ _first or "-" }}</td>
+        <td>{{ _last or "-" }}</td>
+        <td><span class="status">{{ a.status }}</span></td>
+      </tr>
     {% endfor %}
   </tbody>
 </table>
@@ -314,7 +323,7 @@
         <td>{{ e.event_type }}</td>
         <td>{{ e.user or "-" }}</td>
         <td>{{ e.src_ip or "-" }}</td>
-        <td>{{ e.message or "-" }}</td>
+        <td>{{ e.raw or "-" }}</td>
       </tr>
     {% endfor %}
   </tbody>
