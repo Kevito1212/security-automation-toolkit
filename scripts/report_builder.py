@@ -19,6 +19,26 @@ def load_json(path: Path) -> dict | None:
         return None
 
 
+def load_jsonl(path: Path) -> list[dict]:
+    """
+    Lê JSONL e retorna lista de dicts.
+    Se não existir, retorna lista vazia.
+    """
+    if not path.exists():
+        log.warning(f"Arquivo não encontrado (pulando): {path}")
+        return []
+    rows: list[dict] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            rows.append(json.loads(line))
+        except json.JSONDecodeError:
+            log.warning(f"Linha JSONL inválida (pulando): {path}")
+    return rows
+
+
 def main():
     cfg = load_config()
 
@@ -29,6 +49,10 @@ def main():
     log_report_path = outputs_dir / "log_report.json"
     password_report_path = outputs_dir / "password_report.json"
 
+    # SOC alerts
+    soc_alerts_bf_path = outputs_dir / "soc_alerts.jsonl"
+    soc_alerts_cmp_path = outputs_dir / "soc_alerts_compromise.jsonl"
+
     log.info("Iniciando report_builder")
     log.info(f"Outputs dir: {outputs_dir} | Reports dir: {reports_dir}")
 
@@ -36,12 +60,21 @@ def main():
     log_report = load_json(log_report_path)
     password_report = load_json(password_report_path)
 
+    soc_alerts_bf = load_jsonl(soc_alerts_bf_path)
+    soc_alerts_cmp = load_jsonl(soc_alerts_cmp_path)
+    soc_alerts = soc_alerts_bf + soc_alerts_cmp
+
     summary = {
         "open_ports": port_scan.get("open_ports") if port_scan else None,
         "failed_logins": log_report.get("failed_attempts") if log_report else None,
         "password_strength": (
             password_report.get("result", {}).get("verdict")
             if password_report else None
+        ),
+        "soc_alerts_total": len(soc_alerts),
+        "soc_alerts_high_critical": sum(
+            1 for a in soc_alerts
+            if str(a.get("severity", "")).lower() in ("high", "critical")
         ),
     }
 
@@ -53,12 +86,13 @@ def main():
             "port_scan": port_scan,
             "log_analysis": log_report,
             "password_check": password_report,
+            "soc_alerts": soc_alerts,  # <- AQUI entra no HTML
         },
     }
 
     reports_dir.mkdir(parents=True, exist_ok=True)
     out_path = reports_dir / "final_report.json"
-    out_path.write_text(json.dumps(final_report, indent=2), encoding="utf-8")
+    out_path.write_text(json.dumps(final_report, indent=2, ensure_ascii=False), encoding="utf-8")
 
     log.info("Relatório final gerado com sucesso")
     log.info(f"Arquivo salvo em: {out_path}")
@@ -69,3 +103,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    

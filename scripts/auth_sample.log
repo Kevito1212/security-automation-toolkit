@@ -1,6 +1,6 @@
-Feb 25 10:00:01 ubuntu sshd[1111]: Failed password for root from 192.168.1.10 port 50001 ssh2
-Feb 25 10:00:20 ubuntu sshd[1111]: Failed password for root from 192.168.1.10 port 50002 ssh2
-Feb 25 10:00:35 ubuntu sshd[1111]: Failed password for admin from 192.168.1.10 port 50003 ssh2
-Feb 25 10:01:05 ubuntu sshd[1111]: Failed password for admin from 192.168.1.10 port 50004 ssh2
-Feb 25 10:01:40 ubuntu sshd[1111]: Failed password for admin from 192.168.1.10 port 50005 ssh2
-Feb 25 10:02:10 ubuntu sshd[1111]: Accepted password for user from 192.168.1.5 port 60001 ssh2
+Feb 25 10:00:01 server sshd[111]: Failed password for admin from 192.168.1.10 port 54421 ssh2
+Feb 25 10:00:20 server sshd[111]: Failed password for admin from 192.168.1.10 port 54422 ssh2
+Feb 25 10:00:40 server sshd[111]: Failed password for admin from 192.168.1.10 port 54423 ssh2
+Feb 25 10:01:10 server sshd[111]: Failed password for admin from 192.168.1.10 port 54424 ssh2
+Feb 25 10:01:40 server sshd[111]: Failed password for admin from 192.168.1.10 port 54425 ssh2
+Feb 25 10:01:55 server sshd[111]: Accepted password for admin from 192.168.1.10 port 54426 ssh2

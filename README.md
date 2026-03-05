@@ -1,59 +1,112 @@
 # Security Automation Toolkit (S.A.T.)
 
-S.A.T. é um projeto prático em Cibersegurança desenvolvido em Python com foco na simulação de fluxo de trabalho de um Security Operations Center (SOC).
+S.A.T. é um projeto prático de **Security Detection Engineering em Python**, simulando um pipeline de análise utilizado em **Security Operations Centers (SOC)**, com ingestão de logs, correlação temporal de eventos e geração de alertas estruturados compatíveis com SIEM.
 
-A ferramenta evoluiu de scripts independentes para uma arquitetura modular orquestrada via CLI, incorporando ingestão de logs, normalização de eventos em formato JSONL, correlação temporal (sliding window) e geração de alertas estruturados com impacto direto no cálculo de risco.
+A ferramenta evoluiu de scripts independentes para uma arquitetura modular orquestrada via CLI, incorporando:
+
+- ingestão de logs
+- normalização de eventos em **JSONL**
+- correlação temporal (**sliding window**)
+- regras de detecção comportamental
+- geração de alertas estruturados **compatíveis com SIEM**
+
+O projeto foi desenvolvido como **portfólio técnico focado em SOC / Blue Team**.
 
 ---
 
-## Objetivo do Projeto
+# Objetivo do Projeto
 
 Demonstrar, de forma prática e aplicada:
 
-- Automação em Segurança da Informação  
-- Organização e consolidação de evidências técnicas  
-- Estruturação de eventos no modelo similar a SIEM  
-- Implementação de regras de detecção comportamental  
-- Correlação temporal de eventos (sliding window)  
-- Geração de alertas enriquecidos com contexto temporal  
-- Integração de pipeline SOC com relatório executivo  
-- Arquitetura modular orientada a CLI    
-
-O projeto foi desenvolvido como portfólio técnico com foco em estágio/júnior em Segurança da Informação, especialmente em SOC / Blue Team.
+- Automação em Segurança da Informação
+- Organização e consolidação de evidências técnicas
+- Estruturação de eventos no modelo similar a SIEM
+- Implementação de regras de detecção comportamental
+- Correlação temporal de eventos (sliding window)
+- Geração de alertas enriquecidos com contexto temporal
+- Pipeline de análise inspirado em SOC
+- Arquitetura modular orientada a CLI
 
 ---
 
-## Arquitetura do Projeto
+# Arquitetura do Projeto
 
-
+```text
 security-automation-toolkit/
 ├── sat/
-│ ├── __main__.py
-│ ├── cli.py
-│ ├── soc/
-│ │ ├── ingest.py
-│ │ ├── detection.py
-│ │ ├── models.py
-│ ├── config/
-│ └── utils/
+│   ├── __main__.py
+│   ├── cli.py
+│   ├── soc/
+│   │   ├── ingest.py
+│   │   ├── detection.py
+│   │   ├── models.py
+│   ├── config/
+│   └── utils/
+│
 ├── scripts/
-│ ├── port_scanner.py
-│ ├── log_analyzer.py
-│ ├── password_checker.py
-│ ├── report_builder.py
-│ └── auth_sample.log
+│   ├── port_scanner.py
+│   ├── log_analyzer.py
+│   ├── password_checker.py
+│   ├── report_builder.py
+│   └── auth_sample.log
+│
+├── examples/
+│   └── ssh_events_sample.jsonl
+│
 ├── outputs/
-│ ├── soc_events_auth.jsonl
-│ └── soc_alerts.jsonl
+│   ├── alerts_bruteforce.jsonl
+│   └── alerts_compromise.jsonl
+│
 ├── reports/
-│ └── final_report.json
+│   └── final_report.json
+│
 ├── logs/
-│ └── sat.log
+│   └── sat.log
+│
 └── README.md
+```
   
 ---
 
-## Funcionalidades — v1.2 (SOC Simulation Mode)
+
+---
+
+## Detection Engine (SOC Simulation)
+
+O S.A.T. implementa regras de detecção inspiradas em **workflows reais de SOC**.
+
+As regras utilizam **correlação temporal (sliding window)** para identificar padrões suspeitos em eventos de autenticação.
+
+---
+
+# Detection Rules
+
+## SAT-SSH-001 — SSH Brute Force Detection
+
+Detecta múltiplas falhas de autenticação SSH provenientes do mesmo endereço IP dentro de uma janela de tempo definida.
+
+**Técnica MITRE ATT&CK**
+
+T1110 — Brute Force
+
+---
+
+## SAT-SSH-002 — Possible Account Compromise
+
+Correla múltiplas falhas de login SSH seguidas de um login bem-sucedido dentro da mesma janela temporal.
+
+Esse padrão pode indicar tentativa de brute force que resultou em comprometimento de conta.
+
+**Técnicas MITRE ATT&CK**
+
+T1110 — Brute Force  
+T1078 — Valid Accounts
+
+---
+
+Os alertas são exportados em formato **JSONL SIEM-ready**, permitindo ingestão futura em ferramentas de monitoramento como SIEM, SOAR ou pipelines de análise de segurança.
+
+## Funcionalidades — v1.3 (SOC Simulation Mode)
 
 ### 1. Ingestão e Normalização de Logs
 
@@ -78,37 +131,35 @@ Cada evento normalizado contém:
 
 ---
 
-### 2. Detecção de Brute Force SSH
+### 2. Execução das Regras de Detecção
 
-Regra baseada em correlação temporal:
-
-Se um endereço IP registrar múltiplas falhas de login SSH dentro de uma janela de tempo definida, é gerado um alerta de severidade alta.
-
-A detecção utiliza algoritmo de sliding window para correlação temporal.
-
-#### Comando:
+#### Brute Force Detection:
 ```bash
 python -m sat detect bruteforce --threshold 5 --window 120
 ```
-## Parâmetros:
-
-- threshold: número mínimo de falhas
-- window: janela de tempo (segundos)
-
+#### Possible Compromise Detection:
+```bash
+python -m sat detect compromise
+```
 #### Saída:
-  outputs/soc_alerts.jsonl
+  outputs/alerts_bruteforce.jsonl
+  outputs/alerts_compromise.jsonl
 
-## Exemplo de alerta:
-{
-  "alert_type": "brute_force_detected",
-  "severity": "high",
-  "src_ip": "192.168.1.10",
-  "failed_attempts": 5,
-  "window_seconds": 120,
-  "first_seen": "2026-02-25T10:00:01",
-  "last_seen": "2026-02-25T10:01:40",
-  "status": "open"
-}
+
+## Pipeline de Detecção
+
+O fluxo de processamento do S.A.T. segue etapas inspiradas em arquiteturas de monitoramento utilizadas em SOC:
+
+1. **Ingestão de Logs**
+2. **Normalização de Eventos**
+3. **Correlação Temporal**
+4. **Execução de Regras de Detecção**
+5. **Geração de Alertas Estruturados**
+6. **Consolidação em Relatório**
+
+```text
+Logs → Ingest → Normalize → Detect → Alert → Report
+```
 
 Os alertas são automaticamente incorporados ao relatório HTML, influenciando o score de risco.
 
@@ -180,7 +231,7 @@ python -m sat run report --html
 - Classificação automática (baixo / médio / alto)
 - Alertas SOC destacados
 - Consolidação de evidências técnicas
-- Recomendações
+- Recomendações de segurança
 
 ## Funcionalidades Originais (Automação e Relatórios)
 
@@ -198,30 +249,31 @@ python -m sat run report --html
 ### Monitoramento e Detecção
 
 - Normalização de logs em JSONL
-- Extração e manipulação de timestamp
-- Correlação temporal (sliding window)
+- Correlação temporal de eventos
+- Detecção comportamental
 - Geração de alertas estruturados
-- Enriquecimento de contexto (first_seen / last_seen)
-- Integração de alertas ao cálculo dinâmico de risk scoring
+- Enrichment de evidências
+- MITRE ATT&CK mapping
 
 ### Arquitetura e Engenharia
 
-- Arquitetura modular desacoplada
-- Orquestração via CLI (`python -m sat`)
+- Arquitetura modular em Python
+- Pipeline inspirado em SOC
+- CLI modular (python -m sat)
 - Separação entre ingestão, detecção e apresentação
-- Logging estruturado para auditoria
-- Controle de execução via subprocess com ambiente isolado
-- Geração dinâmica de relatórios via Jinja2
+- Logging estruturado
+- Geração de relatórios automatizados
 
 ---
 
 ## Evolução Planejada
 
-- Correlação entre múltiplos eventos
-- Classificação dinâmica de severidade (risk scoring)
-- Status de alerta (open, investigating, closed)
-- Simulação de incidente com linha do tempo
-- Integração futura com formato compatível com SIEM
+- Engine de regras baseada em YAML
+- Correlação multi-evento
+- Classificação dinâmica de risco
+- Timeline de incidentes
+- Integração com SIEM
+- Simulação completa de investigação SOC
 
 ---
 
@@ -234,7 +286,9 @@ Não deve ser utilizado em ambientes de produção ou sistemas sem autorização
 
 ## Autor
 
-Keven Silva  
-Estudante de Segurança da Informação 
-Projeto voltado para portfólio técnico e desenvolvimento profissional na área de Cibersegurança 
-Foco em SOC / Blue Team
+**Keven Silva**
+
+Estudante de Segurança da Informação  
+Foco em **SOC / Blue Team / Detection Engineering**
+
+Projeto desenvolvido como portfólio técnico para vagas de estágio e júnior em Cibersegurança.

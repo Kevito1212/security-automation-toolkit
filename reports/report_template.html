@@ -101,12 +101,6 @@
     margin-bottom: 6px;
   }
 
-  .kpi-value {
-    font-size: 28px;
-    font-weight: 700;
-    margin: 0;
-  }
-
   .kpi-sub {
     font-size: 12px;
     color: var(--muted);
@@ -141,9 +135,7 @@
   }
 
   @media (prefers-color-scheme: dark) {
-    .alert-high {
-      background: rgba(231, 76, 60, 0.12);
-    }
+    .alert-high { background: rgba(231, 76, 60, 0.12); }
   }
 
   /* RISK BAR */
@@ -193,12 +185,23 @@
     border: 1px solid var(--border);
     padding: 8px;
     text-align: left;
+    vertical-align: top;
   }
 
   th { background: var(--table-header); }
 
   .small { font-size: 12px; color: var(--muted); }
 
+  /* label discreto */
+  .pill {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--muted);
+    background: transparent;
+  }
 </style>
 </head>
 
@@ -233,9 +236,11 @@
   </div>
 
   <div class="card span-4">
+    <div class="kpi-title">Risco (visual)</div>
     <div class="donut" id="riskDonut">
       <div class="donut-inner">{{ risk_score }}</div>
     </div>
+    <div class="kpi-sub"><span class="pill">0–100</span></div>
   </div>
 
 </div>
@@ -251,6 +256,7 @@
     <tr>
       <th>Tipo</th>
       <th>Severidade</th>
+      <th>MITRE</th>
       <th>IP</th>
       <th>Falhas</th>
       <th>Janela</th>
@@ -264,11 +270,22 @@
     <tr class="{% if a.severity in ['high', 'critical'] %}alert-high{% endif %}">
       <td>{{ a.alert_type }}</td>
       <td><span class="badge {{ a.severity_class }}">{{ a.severity }}</span></td>
+      <td>
+        {% if a.mitre %}
+          {% if a.mitre is string %}
+            {{ a.mitre }}
+          {% else %}
+            {{ a.mitre | join(", ") }}
+          {% endif %}
+        {% else %}
+          -
+        {% endif %}
+      </td>
       <td>{{ a.src_ip }}</td>
-      <td>{{ a.failed_attempts }}</td>
-      <td>{{ a.window_seconds }}s</td>
-      <td>{{ a.first_seen }}</td>
-      <td>{{ a.last_seen }}</td>
+      <td>{{ a.failed_attempts if a.failed_attempts is not none else "-" }}</td>
+      <td>{{ a.window_seconds if a.window_seconds is not none else "-" }}{% if a.window_seconds is not none %}s{% endif %}</td>
+      <td>{{ a.first_seen or "-" }}</td>
+      <td>{{ a.last_seen or "-" }}</td>
       <td><span class="status">{{ a.status }}</span></td>
     </tr>
     {% endfor %}
@@ -276,6 +293,34 @@
 </table>
 {% else %}
 <p class="small">Nenhum alerta SOC gerado.</p>
+{% endif %}
+
+<h2>Attack Timeline</h2>
+{% if attack_timeline and attack_timeline|length > 0 %}
+<table>
+  <thead>
+    <tr>
+      <th>Timestamp</th>
+      <th>Tipo</th>
+      <th>Usuário</th>
+      <th>IP</th>
+      <th>Mensagem</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for e in attack_timeline %}
+      <tr>
+        <td>{{ e.timestamp }}</td>
+        <td>{{ e.event_type }}</td>
+        <td>{{ e.user or "-" }}</td>
+        <td>{{ e.src_ip or "-" }}</td>
+        <td>{{ e.message or "-" }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="small">Timeline não disponível (sem eventos correlacionados).</p>
 {% endif %}
 
 <script>

@@ -1,0 +1,6 @@
+{"event_type":"ssh_login_failed","src_ip":"10.0.0.50","user":"root","timestamp":"2026-03-04T18:00:00"}
+{"event_type":"ssh_login_failed","src_ip":"10.0.0.50","user":"root","timestamp":"2026-03-04T18:00:10"}
+{"event_type":"ssh_login_failed","src_ip":"10.0.0.50","user":"root","timestamp":"2026-03-04T18:00:20"}
+{"event_type":"ssh_login_failed","src_ip":"10.0.0.50","user":"root","timestamp":"2026-03-04T18:00:30"}
+{"event_type":"ssh_login_failed","src_ip":"10.0.0.50","user":"root","timestamp":"2026-03-04T18:00:40"}
+{"event_type":"ssh_login_success","src_ip":"10.0.0.50","user":"root","timestamp":"2026-03-04T18:01:00"}

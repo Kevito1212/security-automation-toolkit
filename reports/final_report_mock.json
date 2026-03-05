@@ -1,0 +1,30 @@
+{
+  "tool": "security_automation_toolkit",
+  "generated_at": "2026-02-11T14:28:00+00:00",
+  "summary": {
+    "open_ports": [22, 80],
+    "failed_logins": 5,
+    "password_strength": "fraca"
+  },
+  "details": {
+    "port_scan": {
+      "tool": "port_scanner",
+      "host": "192.168.0.10",
+      "open_ports": [
+        { "port": 22, "service_hint": "ssh" },
+        { "port": 80, "service_hint": "http" }
+      ]
+    },
+    "log_analysis": {
+      "failed_attempts": 5,
+      "top_suspicious_ip": "10.0.0.5",
+      "top_suspicious_ip_count": 3
+    },
+    "password_check": {
+      "result": {
+        "verdict": "fraca",
+        "score": 2
+      }
+    }
+  }
+}
